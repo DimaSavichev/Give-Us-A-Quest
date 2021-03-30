@@ -1,7 +1,8 @@
 from locations import *
 characters = ['Герой']
+locs = parse("main")
 print("Добро пожаловать в игру Дайте Квест (!). Это текстовая игра по мотивам дискографии группы Дайте Танк (!). Вы можете приступить к игре, выбрав персонажа за которого хотите играть.")
 c = input()
 
 if characters.index(c) == 0:
-    bedroom.start()
+    locs["Спальня"].start()
