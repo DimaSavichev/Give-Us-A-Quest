@@ -1,7 +1,16 @@
-from locations import *
-characters = ['Герой']
-print("Добро пожаловать в игру Дайте Квест (!). Это текстовая игра по мотивам дискографии группы Дайте Танк (!). Вы можете приступить к игре, выбрав персонажа за которого хотите играть.")
-c = input()
+from src.storyline import *
+storylines = findStorylines()
+print("Добро пожаловать в игру Дайте Квест (!). Выберите сценарий, в который вы хотите сыграть")
+for key in storylines.keys():
+    print(key)
 
-if characters.index(c) == 0:
-    bedroom.start()
+while True:
+    c = input()
+    try:
+        storyline = StoryLine(storylines[c])
+        break
+    except:
+        print("Кажется вы ошиблись и такого сценария пока нет :с Попробуйте снова")
+
+while True:
+    storyline.step()
