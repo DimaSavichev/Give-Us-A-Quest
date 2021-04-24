@@ -1,4 +1,4 @@
-from location import *
+from src.location import *
 from os import listdir
 
 
@@ -27,7 +27,7 @@ def parseConfig(filename):
 
 
 def findStorylines():
-    files = listdir("../storylines/configs")
+    files = listdir("storylines/configs")
     storylines = dict()
     for file in files:
         key = parseConfig(file.replace('.txt', ''))["name"]
