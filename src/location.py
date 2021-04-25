@@ -1,3 +1,11 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame as pg
+pg.init()
+
+current_music = "default"
+
+
 class Location:
     def __init__(self, name, intro, choices, calls=None, music="default"):
         if calls is None:
@@ -9,7 +17,13 @@ class Location:
         self.music = music
 
     def play_music(self):
-        pass  # Todo добавить воспроизведение аудиофайлов
+        global current_music
+        if self.music != current_music:
+            pg.mixer.music.unload()
+            pg.mixer.music.load("music/" + self.music + ".mp3")
+            pg.mixer.music.play(-1)
+            current_music = self.music
+
 
     def list_choices(self):
         for i in range(len(self.choices)):
@@ -28,10 +42,10 @@ class Location:
         return self.find(choice)
 
     def __repr__(self):
-        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Musixc: {self.music}'
+        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Musix: {self.music}'
 
     def __str__(self):
-        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Musixc: {self.music}'
+        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Musix: {self.music}'
 
 
 def parseLocations(filename):
@@ -49,7 +63,8 @@ def parseLocations(filename):
         locations[params[0]] = location
         data.append(params.copy())
     try:
-        mod = getattr(__import__('functions.' + filename), filename)
+        mod = getattr(__import__('storylines.functions.' + filename), "functions")
+        mod = getattr(mod, filename)
         found = True
     except ():
         found = False
