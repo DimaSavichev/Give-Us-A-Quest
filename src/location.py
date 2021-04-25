@@ -1,5 +1,11 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame as pg
 pg.init()
+
+current_music = "default"
+
+
 class Location:
     def __init__(self, name, intro, choices, calls=None, music="default"):
         if calls is None:
@@ -11,9 +17,12 @@ class Location:
         self.music = music
 
     def play_music(self):
-        pg.mixer.music.unload()
-        pg.mixer.music.load("music/" + self.music + ".mp3")
-        pg.mixer.music.play()
+        global current_music
+        if self.music != current_music:
+            pg.mixer.music.unload()
+            pg.mixer.music.load("music/" + self.music + ".mp3")
+            pg.mixer.music.play(-1)
+            current_music = self.music
 
 
     def list_choices(self):
