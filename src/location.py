@@ -1,15 +1,18 @@
+from src.config import FUNCTIONS_MODULENAME, pathToLocations, moduleNameForFunctions, \
+    pathToMusic, DEFAULT_MUSIC_FILENAME
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame as pg
 pg.init()
 
-current_music = "default"
+current_music = DEFAULT_MUSIC_FILENAME
 
 
 class Location:
-    def __init__(self, name, intro, choices, calls=None, music="default"):
+    def __init__(self, storyline, name, intro, choices, calls=None, music="default"):
         if calls is None:
             calls = []
+        self.storyline = storyline
         self.name = name
         self.intro = intro
         self.choices = choices
@@ -20,10 +23,9 @@ class Location:
         global current_music
         if self.music != current_music:
             pg.mixer.music.unload()
-            pg.mixer.music.load("music/" + self.music + ".mp3")
+            pg.mixer.music.load(pathToMusic(self.storyline, self.music))
             pg.mixer.music.play(-1)
             current_music = self.music
-
 
     def list_choices(self):
         for i in range(len(self.choices)):
@@ -32,45 +34,53 @@ class Location:
     def find(self, choice):
         return int(choice)  # self.choices.index(choice)  # Todo добавить обработку естествееного языка
 
-    def start(self):
+    def start(self, ask=True):
         self.play_music()
         print("Локация: " + self.name)
         print(self.intro)
-        print("Ваши действия:")
-        self.list_choices()
-        choice = input()
-        return self.find(choice)
+        if ask:
+            print("Ваши действия:")
+            self.list_choices()
+            choice = input()
+            return self.find(choice)
+        else:
+            print("Это была последняя локация! Надеюсь вам понравилось.")
+            return
 
     def __repr__(self):
-        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Musix: {self.music}'
+        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Music: {self.music}'
 
     def __str__(self):
-        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Musix: {self.music}'
+        return f'Name: {self.name}; Intro: {self.intro}; Choices: {self.choices}; Music: {self.music}'
 
 
 def parseLocations(filename):
-    f = open('storylines/locations/' + filename + '.txt', 'r', encoding='utf-8')
+    f = open(pathToLocations(filename), 'r', encoding='utf-8')
     locations = dict()
     data = list()
     for line in f:
         params = line.split('; ')
         params[2] = params[2].split(', ')
         params[3] = params[3].split(', ')
-        if params[2][0] == "": params[2] = []
-        if params[3][0] == "": params[3] = []
-        if params[-1][-1] == '\n': params[-1] = params[-1][:-1]
-        location = Location(params[0], params[1], params[2].copy(), music=params[4])
+        if params[2][0] == "":
+            params[2] = []
+        if params[3][0] == "":
+            params[3] = []
+        if params[-1][-1] == '\n':
+            params[-1] = params[-1][:-1]
+        location = Location(filename, params[0], params[1], params[2].copy(), music=params[4])
         locations[params[0]] = location
         data.append(params.copy())
     try:
-        mod = getattr(__import__('storylines.functions.' + filename), "functions")
-        mod = getattr(mod, filename)
+        mod = getattr(__import__(moduleNameForFunctions(filename)), filename)
+        mod = getattr(mod, FUNCTIONS_MODULENAME)
         found = True
     except ():
         found = False
     for i in range(len(data)):
         for func in data[i][3]:
-            if func == "": break
+            if func == "":
+                break
             if func in locations.keys():
                 locations[data[i][0]].calls.append(locations[func])
             elif found and hasattr(mod, func):
@@ -79,5 +89,3 @@ def parseLocations(filename):
                 print("Used function/location " + func + " not found")
                 return
     return locations
-
-

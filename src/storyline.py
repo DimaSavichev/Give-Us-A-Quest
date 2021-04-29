@@ -1,4 +1,5 @@
-from src.location import *
+from src.location import parseLocations, Location
+from src.config import pathToConfig, STORYLINE_DIR
 from os import listdir
 
 
@@ -9,15 +10,19 @@ class StoryLine:
         self.current_location = self.locations[self.config["first location"]]
 
     def step(self):
+        if self.current_location == self.locations[self.config["last location"]]:
+            self.current_location.start(False)
+            return True
+
         choice = self.current_location.start()
         if isinstance(self.current_location.calls[choice], Location):
             self.current_location = self.current_location.calls[choice]
         else:
             self.current_location = self.current_location.calls[choice].__call__(self)
-
+        return False
 
 def parseConfig(filename):
-    f = open('storylines/configs/' + filename + '.txt', 'r', encoding='utf-8')
+    f = open(pathToConfig(filename), 'r', encoding='utf-8')
     config = dict()
     for line in f:
         key, value = line.strip().split(': ')
@@ -27,10 +32,10 @@ def parseConfig(filename):
 
 
 def findStorylines():
-    files = listdir("storylines/configs")
+    dirs = listdir(STORYLINE_DIR)
     storylines = dict()
-    for file in files:
-        key = parseConfig(file.replace('.txt', ''))["name"]
-        storylines[key] = file.replace('.txt', '')
+    for directory in dirs:
+        key = parseConfig(directory)["name"]
+        storylines[key] = directory
 
     return storylines

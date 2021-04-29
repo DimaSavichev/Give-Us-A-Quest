@@ -1,0 +1,3 @@
+Name: Give Us A Quest
+First Location: Спальня
+Last Location: Улица
